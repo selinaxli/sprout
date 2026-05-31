@@ -1,0 +1,135 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <title>Sprout — Asset Gallery</title>
+  <style>
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body {
+      font-family: -apple-system, "SF Pro Text", "Helvetica Neue", sans-serif;
+      background: linear-gradient(135deg, #cfe9d8, #aacdec 60%, #d8c9ec);
+      min-height: 100vh;
+      padding: 32px 24px 48px;
+      color: #2f3b33;
+    }
+    h1 { font-size: 22px; font-weight: 700; margin-bottom: 6px; }
+    .subtitle { font-size: 14px; opacity: 0.6; margin-bottom: 32px; }
+    h2 {
+      font-size: 15px; font-weight: 700; letter-spacing: .02em;
+      text-transform: uppercase; opacity: 0.5;
+      margin: 32px 0 14px;
+    }
+
+    /* ── Plants ── */
+    .plants-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(100px, 1fr));
+      gap: 12px;
+    }
+    .plant-card {
+      background: rgba(255,255,255,0.55);
+      border: 1px solid rgba(255,255,255,0.7);
+      border-radius: 16px;
+      padding: 12px 8px 10px;
+      display: flex; flex-direction: column; align-items: center; gap: 8px;
+      backdrop-filter: blur(6px);
+    }
+    .plant-card img { width: 72px; height: 72px; object-fit: contain; }
+    .plant-card .label {
+      font-size: 11px; font-weight: 600; text-align: center;
+      color: #2f3b33; opacity: 0.7; text-transform: capitalize;
+      white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+      max-width: 90px;
+    }
+
+    /* ── Cats ── */
+    .cats-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+      gap: 14px;
+    }
+    .cat-row {
+      background: rgba(255,255,255,0.55);
+      border: 1px solid rgba(255,255,255,0.7);
+      border-radius: 18px;
+      padding: 12px 14px 14px;
+      backdrop-filter: blur(6px);
+    }
+    .cat-row .name {
+      font-size: 13px; font-weight: 700; opacity: 0.6;
+      text-transform: capitalize; margin-bottom: 8px;
+    }
+    .cat-poses {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 8px;
+    }
+    .cat-pose {
+      display: flex; flex-direction: column; align-items: center; gap: 4px;
+      background: rgba(255,255,255,0.4);
+      border-radius: 12px;
+      padding: 6px 2px 4px;
+    }
+    .cat-pose img { width: 100%; max-width: 84px; height: auto; object-fit: contain; }
+    .cat-pose .pose-label {
+      font-size: 10px; opacity: 0.45; text-transform: capitalize;
+    }
+  </style>
+</head>
+<body>
+
+  <h1>🌱 Sprout — Asset Gallery</h1>
+  <p class="subtitle">All 20 plants · 8 cats × 3 poses = 24 cat images</p>
+
+  <h2>Plants (20)</h2>
+  <div class="plants-grid" id="plants"></div>
+
+  <h2>Cats (8 colours × 3 poses)</h2>
+  <div class="cats-grid" id="cats"></div>
+
+  <script>
+    const PLANTS = [
+      'sunflower','tulip','rose','daisy','lavender','cactus','succulent',
+      'fern','monstera','snake_plant','pothos','bonsai','cherry_blossom','lily',
+      'poppy','clover','strawberry','lotus','bluebell','marigold',
+    ];
+    const CATS = [
+      { name: 'orange tabby', file: 'orange_tabby' },
+      { name: 'gray tabby',   file: 'gray_tabby'   },
+      { name: 'black',        file: 'black'         },
+      { name: 'white',        file: 'white'         },
+      { name: 'cream',        file: 'cream'         },
+      { name: 'brown',        file: 'brown'         },
+      { name: 'calico',       file: 'calico'        },
+      { name: 'tuxedo',       file: 'tuxedo'        },
+    ];
+    const POSES = ['walk','sit','stretch'];
+
+    // Plants
+    const pg = document.getElementById('plants');
+    PLANTS.forEach(p => {
+      const label = p.replace(/_/g, ' ');
+      pg.innerHTML += `
+        <div class="plant-card">
+          <img src="assets/plants/${p}.png" alt="${label}">
+          <div class="label">${label}</div>
+        </div>`;
+    });
+
+    // Cats
+    const cg = document.getElementById('cats');
+    CATS.forEach(cat => {
+      let poses = POSES.map(pose => `
+        <div class="cat-pose">
+          <img src="assets/cats/${cat.file}_${pose}.png" alt="${cat.name} ${pose}">
+          <div class="pose-label">${pose}</div>
+        </div>`).join('');
+      cg.innerHTML += `
+        <div class="cat-row">
+          <div class="name">${cat.name}</div>
+          <div class="cat-poses">${poses}</div>
+        </div>`;
+    });
+  </script>
+</body>
+</html>

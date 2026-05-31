@@ -1,0 +1,101 @@
+const { app, BrowserWindow, ipcMain, screen, nativeImage } = require('electron');
+const path = require('path');
+const fs   = require('fs');
+
+let win;
+
+// Persist the user's chosen width between launches.
+const PREFS_PATH = path.join(app.getPath('userData'), 'prefs.json');
+function _loadWidth() {
+  try { return JSON.parse(fs.readFileSync(PREFS_PATH, 'utf8')).width || 500; } catch { return 500; }
+}
+function _saveWidth(w) {
+  try { fs.writeFileSync(PREFS_PATH, JSON.stringify({ width: w })); } catch { /* ignore */ }
+}
+
+// Show the sprout in the Dock (and as the app icon) instead of the Electron logo.
+app.name = 'Sprout';
+const ICON = nativeImage.createFromPath(path.join(__dirname, 'assets', 'icon.png'));
+
+// Default size. Height grows for the finish card then shrinks back.
+// Width is user-adjustable by dragging the right edge.
+const BAR_WIDTH  = 500;   // wider default so the task input isn't cramped
+const BAR_HEIGHT = 92;
+const MIN_WIDTH  = 340;
+const MAX_WIDTH  = 820;
+
+function createWindow() {
+  const { workArea } = screen.getPrimaryDisplay();
+
+  // Remember the last width the user set (falls back to BAR_WIDTH)
+  const savedWidth = _loadWidth();
+
+  win = new BrowserWindow({
+    width:  savedWidth,
+    height: BAR_HEIGHT,
+    minWidth:  MIN_WIDTH,
+    maxWidth:  MAX_WIDTH,
+    minHeight: BAR_HEIGHT,
+    // Start near the top-center of the screen.
+    x: Math.round(workArea.x + (workArea.width - savedWidth) / 2),
+    y: Math.round(workArea.y + 40),
+    frame: false,                 // no title bar — just our little bar
+    transparent: true,
+    backgroundColor: '#00000000',
+    hasShadow: false,
+    resizable: true,              // user can drag the right edge to resize
+    movable: true,
+    fullscreenable: false,
+    maximizable: false,
+    minimizable: true,
+    webPreferences: {
+      preload: path.join(__dirname, 'preload.js'),
+      contextIsolation: true,
+      nodeIntegration: false,
+    },
+  });
+
+  // Float above all normal windows.
+  win.setAlwaysOnTop(true, 'floating');
+  // Show on every Space / desktop so it's always with you.
+  win.setVisibleOnAllWorkspaces(true, { visibleOnFullScreen: true });
+
+  // Save width whenever the user finishes resizing.
+  win.on('resize', () => {
+    const [w, h] = win.getSize();
+    _saveWidth(w);
+    // Keep height locked to whatever state the bar is in — only width changes.
+    const [x, y] = win.getPosition();
+    if (h !== win._lockedHeight) win.setBounds({ x, y, width: w, height: win._lockedHeight || BAR_HEIGHT }, false);
+  });
+  win._lockedHeight = BAR_HEIGHT;
+
+  win.loadFile('index.html');
+}
+
+// Renderer asks to grow/shrink the window (e.g. for the finish card),
+// keeping the top-left corner anchored so it expands downward.
+ipcMain.on('resize-window', (_event, height) => {
+  if (!win) return;
+  const [x, y] = win.getPosition();
+  const [w] = win.getSize();
+  const h = Math.round(height);
+  win._lockedHeight = h;
+  win.setBounds({ x, y, width: w, height: h }, false);
+});
+
+ipcMain.on('quit-app', () => app.quit());
+
+app.whenReady().then(() => {
+  if (process.platform === 'darwin' && app.dock && !ICON.isEmpty()) {
+    app.dock.setIcon(ICON);
+  }
+  createWindow();
+  app.on('activate', () => {
+    if (BrowserWindow.getAllWindows().length === 0) createWindow();
+  });
+});
+
+// On macOS apps usually stay running, but for a tiny utility we quit
+// when its window closes.
+app.on('window-all-closed', () => app.quit());

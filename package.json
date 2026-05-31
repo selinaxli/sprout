@@ -1,0 +1,47 @@
+{
+  "name": "sprout",
+  "productName": "Sprout",
+  "version": "0.1.0",
+  "description": "A tiny, cute, always-on-top focus timer for Mac",
+  "main": "main.js",
+  "scripts": {
+    "start": "electron .",
+    "dist": "electron-builder --mac"
+  },
+  "author": "Selina Li",
+  "license": "MIT",
+  "devDependencies": {
+    "electron": "^42.3.0",
+    "electron-builder": "^26.8.1"
+  },
+  "build": {
+    "appId": "com.sprout.focus",
+    "productName": "Sprout",
+    "files": [
+      "main.js",
+      "preload.js",
+      "index.html",
+      "styles.css",
+      "app.js",
+      "cats.js",
+      "plants.js",
+      "assets/**/*",
+      "!assets/cats-reference.png",
+      "!assets/plants-reference.png",
+      "!assets/meows/raw/**/*"
+    ],
+    "mac": {
+      "icon": "assets/icon.icns",
+      "category": "public.app-category.productivity",
+      "target": [
+        {
+          "target": "dmg",
+          "arch": [
+            "arm64",
+            "x64"
+          ]
+        }
+      ]
+    }
+  }
+}

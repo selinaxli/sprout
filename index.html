@@ -1,0 +1,81 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Sprout</title>
+  <link rel="stylesheet" href="styles.css" />
+</head>
+<body>
+  <div id="bar" class="bar" data-state="idle">
+    <div class="card">
+
+      <!-- ===== IDLE ===== -->
+      <div class="row row-idle">
+        <span class="seed-dot" aria-hidden="true">🌱</span>
+        <input id="task-input" class="task-input no-drag" type="text"
+               placeholder="What are you working on?" maxlength="60" />
+        <!-- mute sits right before the minute field -->
+        <button class="mute-btn no-drag" title="Mute sounds">
+          <span class="mute-icon">🔊</span>
+        </button>
+        <div class="time-field no-drag">
+          <input id="minutes-input" class="minutes-input" type="number"
+                 min="1" max="180" value="25" />
+          <span class="min-label">min</span>
+        </div>
+        <button id="start-btn" class="btn btn-go no-drag">Start</button>
+      </div>
+
+      <!-- ===== RUNNING ===== -->
+      <div class="row row-running">
+        <div class="plant-stage" aria-hidden="true">
+          <svg id="plant-svg" viewBox="0 0 48 48" class="plant-svg"></svg>
+        </div>
+        <div class="task-display">
+          <div id="task-name" class="task-name">Focus</div>
+        </div>
+        <div class="timer-wrap">
+          <div id="pie" class="pie">
+            <span id="time-left" class="time-left">25:00</span>
+          </div>
+          <!-- mute sits right before the stop button -->
+          <button class="mute-btn no-drag" title="Mute sounds">
+            <span class="mute-icon">🔊</span>
+          </button>
+          <button id="stop-btn" class="icon-btn no-drag" title="Stop task">✕</button>
+        </div>
+        <div id="cat-lane" class="cat-lane" aria-hidden="true">
+          <div id="cat" class="cat"></div>
+        </div>
+      </div>
+
+      <!-- ===== FINISHED ===== -->
+      <div class="row row-finished">
+        <div class="finish-card">
+          <div class="finish-q">Have you finished the task?</div>
+          <div id="finish-buttons" class="finish-buttons">
+            <button id="yes-btn" class="btn btn-go no-drag">Yes 🎉</button>
+            <button id="no-btn" class="btn btn-soft no-drag">Not yet</button>
+          </div>
+          <div id="addtime-buttons" class="addtime-buttons hidden">
+            <button class="btn btn-soft no-drag" data-add="5">+5 min</button>
+            <button class="btn btn-soft no-drag" data-add="10">+10 min</button>
+            <button class="btn btn-soft no-drag" data-add="20">+20 min</button>
+            <button id="cancel-btn" class="btn btn-ghost no-drag">Cancel</button>
+          </div>
+        </div>
+      </div>
+
+      <!-- resize grips: show at left/right edges of the card on hover -->
+      <div class="resize-grip-left" aria-hidden="true"></div>
+      <div class="resize-grip" aria-hidden="true"></div>
+    </div>
+    <canvas id="confetti" class="confetti"></canvas>
+  </div>
+
+  <script src="cats.js"></script>
+  <script src="plants.js"></script>
+  <script src="app.js"></script>
+</body>
+</html>
