@@ -1,4 +1,4 @@
-const { app, BrowserWindow, ipcMain, screen, nativeImage } = require('electron');
+const { app, BrowserWindow, ipcMain, screen, nativeImage, Menu } = require('electron');
 const path = require('path');
 const fs   = require('fs');
 
@@ -87,8 +87,19 @@ ipcMain.on('resize-window', (_event, height) => {
 ipcMain.on('quit-app', () => app.quit());
 
 app.whenReady().then(() => {
-  if (process.platform === 'darwin' && app.dock && !ICON.isEmpty()) {
-    app.dock.setIcon(ICON);
+  if (process.platform === 'darwin') {
+    // Be a first-class Dock app (regular, not accessory) so we get the running
+    // indicator dot — counteracts the always-on-top / all-Spaces panel behavior.
+    app.setActivationPolicy('regular');
+    if (app.dock && !ICON.isEmpty()) app.dock.setIcon(ICON);
+    // Right-click Dock menu, like any normal Mac app — guarantees a Quit option.
+    if (app.dock) {
+      app.dock.setMenu(Menu.buildFromTemplate([
+        { label: 'Show Sprout', click: () => { if (win) { win.show(); win.focus(); } else createWindow(); } },
+        { type: 'separator' },
+        { label: 'Quit Sprout', click: () => app.quit() },
+      ]));
+    }
   }
   createWindow();
   app.on('activate', () => {
