@@ -58,12 +58,18 @@ function createWindow() {
   // Float above all normal windows.
   win.setAlwaysOnTop(true, 'floating');
   // Show on every Space / desktop so it's always with you.
-  win.setVisibleOnAllWorkspaces(true, { visibleOnFullScreen: true });
+  // skipTransformProcessType keeps the app a normal Dock app — without it,
+  // macOS demotes the process to "accessory" (no running dot, no Dock Quit).
+  // Tradeoff: the bar doesn't float over native-fullscreen apps.
+  win.setVisibleOnAllWorkspaces(true, { skipTransformProcessType: true });
 
-  // Save width whenever the user finishes resizing.
+  // Save width whenever the user finishes resizing (debounced — the resize
+  // event fires continuously while dragging, no need to write a file each tick).
+  let saveTimer = null;
   win.on('resize', () => {
     const [w, h] = win.getSize();
-    _saveWidth(w);
+    clearTimeout(saveTimer);
+    saveTimer = setTimeout(() => _saveWidth(w), 300);
     // Keep height locked to whatever state the bar is in — only width changes.
     const [x, y] = win.getPosition();
     if (h !== win._lockedHeight) win.setBounds({ x, y, width: w, height: win._lockedHeight || BAR_HEIGHT }, false);
@@ -84,13 +90,17 @@ ipcMain.on('resize-window', (_event, height) => {
   win.setBounds({ x, y, width: w, height: h }, false);
 });
 
-ipcMain.on('quit-app', () => app.quit());
-
 app.whenReady().then(() => {
   if (process.platform === 'darwin') {
     // Be a first-class Dock app (regular, not accessory) so we get the running
     // indicator dot — counteracts the always-on-top / all-Spaces panel behavior.
     app.setActivationPolicy('regular');
+    // Minimal app menu: menu bar reads "Sprout" with the standard Quit ⌘Q,
+    // plus Edit so copy/paste shortcuts work in the task input.
+    Menu.setApplicationMenu(Menu.buildFromTemplate([
+      { label: 'Sprout', submenu: [{ role: 'about' }, { type: 'separator' }, { role: 'quit' }] },
+      { role: 'editMenu' },
+    ]));
     if (app.dock && !ICON.isEmpty()) app.dock.setIcon(ICON);
     // Right-click Dock menu, like any normal Mac app — guarantees a Quit option.
     if (app.dock) {
